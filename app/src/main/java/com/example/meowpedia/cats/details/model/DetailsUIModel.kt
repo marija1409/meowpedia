@@ -10,7 +10,7 @@ data class DetailsUiModel(
     val origin: String,
     val temperament: String,
     val life_span: String,
-    val weight: CatWeight,
+    val weight: Weight,
     val adaptability: Int,
     val affection_level: Int,
     val child_friendly: Int,
@@ -22,3 +22,7 @@ data class DetailsUiModel(
 )
 
 
+data class Weight(
+    val imperial: String,
+    val metric: String
+)

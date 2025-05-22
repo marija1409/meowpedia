@@ -1,12 +1,9 @@
 package com.example.meowpedia.cats.list
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,17 +13,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,19 +28,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil3.compose.AsyncImage
 import com.example.meowpedia.cats.list.CatList.CatListState
 import com.example.meowpedia.cats.list.CatList.*
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.meowpedia.core.compose.LoadingIndicator
+import com.example.meowpedia.core.compose.TemperamentChips
 
 
 
@@ -58,7 +53,9 @@ fun NavGraphBuilder.cats(
 ) = composable(
     route = route
 ) {
-    val breedListViewModel = viewModel<CatListViewModel>()
+
+    val breedListViewModel: CatListViewModel = hiltViewModel()
+
 
     val state = breedListViewModel.state.collectAsState()
 
@@ -83,7 +80,7 @@ fun BreedListScreen(
 
     Scaffold(
         topBar = {
-            MediumTopAppBar(title = {
+            TopAppBar(title = {
                 Text(
                     text = "Breeds",
                     modifier = Modifier.fillMaxWidth(),
@@ -147,7 +144,9 @@ fun BreedListScreen(
                 when {
                     state.error != null -> {
                         Box(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             val errorMessage = when (state.error) {
@@ -159,12 +158,7 @@ fun BreedListScreen(
                     }
 
                     state.loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator(color = colorScheme.primary)
-                        }
+                        LoadingIndicator()
                     }
 
                     else -> {
@@ -184,8 +178,6 @@ fun BreedListScreen(
                                         containerColor = colorScheme.primary.copy(alpha = 0.1f)
                                     ),
                                 ) {
-                                    val temperaments = breed.temperaments.split(",").map { it.trim() }.take(3)
-
                                     Column {
                                         breed.image?.let {
                                             AsyncImage(
@@ -200,7 +192,6 @@ fun BreedListScreen(
                                                     ),
                                             )
                                         }
-
                                         Text(
                                             text = breed.name,
                                             style = MaterialTheme.typography.headlineSmall.copy(
@@ -228,36 +219,16 @@ fun BreedListScreen(
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = colorScheme.onBackground
                                         )
-
-                                        if (temperaments.isNotEmpty()) {
-                                            Row(
+                                        if (breed.temperaments.isNotBlank()) {
+                                            TemperamentChips(
+                                                temperamentString = breed.temperaments,
+                                                maxTemperaments = 3,
                                                 modifier = Modifier
                                                     .padding(16.dp)
-                                                    .fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                temperaments.forEach { temperament ->
-                                                    AssistChip(
-                                                        onClick = {},
-                                                        label = {
-                                                            Text(text = temperament)
-                                                        },
-                                                        shape = RoundedCornerShape(12.dp),
-                                                        colors = AssistChipDefaults.assistChipColors(
-                                                            containerColor = Color.Transparent,
-                                                            labelColor = colorScheme.onSurface,
-                                                            leadingIconContentColor = colorScheme.onSurface,
-                                                            trailingIconContentColor = colorScheme.onSurface,
-                                                            disabledContainerColor = Color.Transparent,
-                                                            disabledLabelColor = colorScheme.onSurface.copy(alpha = 0.4f),
-                                                            disabledLeadingIconContentColor = colorScheme.onSurface.copy(alpha = 0.4f),
-                                                            disabledTrailingIconContentColor = colorScheme.onSurface.copy(alpha = 0.4f)
-                                                        ),
-                                                        border = BorderStroke(1.dp, colorScheme.secondary)
-                                                    )
-                                                }
-                                            }
+                                                    .fillMaxWidth()
+                                            )
                                         }
+
                                     }
                                 }
                             }

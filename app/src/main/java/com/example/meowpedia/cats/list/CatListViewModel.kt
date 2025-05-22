@@ -3,10 +3,13 @@ package com.example.meowpedia.cats.list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.meowpedia.cats.api.model.CatsApiModel
 import com.example.meowpedia.cats.repository.CatsRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.meowpedia.cats.list.CatList.CatListState
 import com.example.meowpedia.cats.list.model.CatUIModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +17,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CatListViewModel(private val repo: CatsRepo = CatsRepo): ViewModel() {
+
+@HiltViewModel
+class CatListViewModel @Inject constructor(
+    private val repo: CatsRepo
+) : ViewModel() {
 
     private val _state = MutableStateFlow(CatListState())
 
@@ -58,21 +65,10 @@ class CatListViewModel(private val repo: CatsRepo = CatsRepo): ViewModel() {
             setState { copy(loading = true) }
             try {
                 val breeds = withContext(Dispatchers.IO) {
-                    repo.fetchAllBreeds().map { breed ->
-                        CatUIModel(
-                            id = breed.id,
-                            name = breed.name,
-                            alternativeNames = breed.alt_names,
-                            description = breed.description,
-                            temperaments = breed.temperament,
-                            image = breed.image?.url
-                        )
-                    }
+                    repo.fetchAllBreeds().map { it.asCatUIModel() }
                 }
-
-
-
                 setState { copy(breeds = breeds) }
+
             } catch (error: Exception) {
                 setState { copy(error = CatList.ListError.ListUpdateFailed(error))}
                 Log.e("BreedListViewModel", "Error", error)
@@ -81,5 +77,16 @@ class CatListViewModel(private val repo: CatsRepo = CatsRepo): ViewModel() {
             }
         }
     }
+}
+
+private fun CatsApiModel.asCatUIModel(): CatUIModel{
+    return CatUIModel(
+        id = id,
+        name = name,
+        alternativeNames = alt_names,
+        description = description,
+        temperaments = temperament,
+        image = image?.url
+    )
 }
 

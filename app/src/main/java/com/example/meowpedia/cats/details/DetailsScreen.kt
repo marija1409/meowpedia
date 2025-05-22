@@ -1,12 +1,9 @@
 package com.example.meowpedia.cats.details
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,14 +16,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,12 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil3.compose.AsyncImage
@@ -52,6 +42,9 @@ import com.example.meowpedia.core.compose.NoDataContent
 import com.example.meowpedia.core.compose.SectionChip
 import com.example.meowpedia.core.compose.SectionText
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MediumTopAppBar
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.meowpedia.core.compose.TemperamentChips
 
 fun NavGraphBuilder.breedDetails(
     route: String,
@@ -62,14 +55,7 @@ fun NavGraphBuilder.breedDetails(
     val breedId = navBackStackEntry.arguments?.getString("Id")
         ?: throw IllegalStateException("breedId required")
 
-    val detailsViewModel = viewModel<DetailsViewModel>(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DetailsViewModel(breedId = breedId) as T
-            }
-        }
-    )
+    val detailsViewModel: DetailsViewModel = hiltViewModel()
 
     val state = detailsViewModel.state.collectAsState()
 
@@ -88,7 +74,7 @@ fun DetailsScreen(
 ) {
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            MediumTopAppBar(
                 title = {
                     Text(text = state.data?.name ?: "Loading")
                 },
@@ -142,15 +128,18 @@ fun DetailsScreen(
                                 .height(280.dp)
                                 .padding(16.dp)
                         ) {
-                            AsyncImage(
-                                model = data.image,
-                                contentDescription = "${data.name} image",
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .border(2.dp, colorScheme.secondary, RoundedCornerShape(12.dp)),
-                                contentScale = ContentScale.Fit
-                            )
-
+                            data.image?.let{
+                                AsyncImage(
+                                    model = it,
+                                    contentDescription = "${data.name} image",
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .border(2.dp,
+                                            colorScheme.secondary,
+                                            RoundedCornerShape(12.dp)),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
 
                         }
 
@@ -164,30 +153,12 @@ fun DetailsScreen(
                         }
 
                         SectionText("Temperaments")
-                        FlowRow(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            data.temperament.split(",").map { it.trim() }.forEach { temperament ->
-                                AssistChip(
-                                    onClick = {},
-                                    label = { Text(text = temperament) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = Color.Transparent,
-                                        labelColor = colorScheme.onSurface,
-                                        leadingIconContentColor = colorScheme.onSurfaceVariant,
-                                        trailingIconContentColor = colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = Color.Transparent,
-                                        disabledLabelColor = colorScheme.outline,
-                                        disabledLeadingIconContentColor = colorScheme.outline,
-                                        disabledTrailingIconContentColor = colorScheme.outline,
-                                    ),
-                                    border = BorderStroke(1.dp, colorScheme.secondary)
-                                )
-                            }
+                        if (data.temperament.isNotBlank()) {
+                            TemperamentChips(
+                                temperamentString = data.temperament,
+                                maxTemperaments = null,
+                                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))

@@ -1,31 +1,31 @@
 package com.example.meowpedia.cats.details
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.meowpedia.cats.api.model.CatImage
-import com.example.meowpedia.cats.api.model.CatWeight
 import com.example.meowpedia.cats.api.model.CatsApiModel
 import com.example.meowpedia.cats.details.model.DetailsUiModel
-import com.example.meowpedia.cats.list.CatList
-import com.example.meowpedia.cats.list.CatList.CatListState
 import com.example.meowpedia.cats.repository.CatsRepo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.meowpedia.cats.details.Details
 import com.example.meowpedia.cats.details.Details.DetailsUiState
+import com.example.meowpedia.cats.details.model.Weight
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 
-class DetailsViewModel(
-    private val repo: CatsRepo = CatsRepo,
-    breedId: String
+@HiltViewModel
+class DetailsViewModel @Inject constructor(
+    private val repo: CatsRepo,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val breedId = savedStateHandle.get<String>("Id") ?: ""
 
     private val _state = MutableStateFlow(DetailsUiState(breedId))
 
@@ -58,27 +58,7 @@ class DetailsViewModel(
                     }
                 }
 
-                val uiModel = DetailsUiModel(
-                    id = detail.id,
-                    name = detail.name,
-                    image = imageUrl,
-                    description = detail.description,
-                    origin = detail.origin,
-                    temperament = detail.temperament,
-                    life_span = detail.life_span,
-                    weight = CatWeight(
-                        imperial = detail.weight.imperial,
-                        metric = detail.weight.metric
-                    ),
-                    adaptability = detail.adaptability,
-                    affection_level = detail.affection_level,
-                    child_friendly = detail.child_friendly,
-                    dog_friendly = detail.dog_friendly,
-                    energy_level = detail.energy_level,
-                    rare = detail.rare,
-                    wikipedia_url = detail.wikipedia_url
-                )
-
+                val uiModel = detail.toDetailsUiModel(imageUrl)
 
                 setState {
                     copy(
@@ -100,3 +80,27 @@ class DetailsViewModel(
     }
 
 }
+
+private fun CatsApiModel.toDetailsUiModel(imageUrl: String?): DetailsUiModel {
+    return DetailsUiModel(
+        id = id,
+        name = name,
+        image = imageUrl,
+        description = description,
+        origin = origin,
+        temperament = temperament,
+        life_span = life_span,
+        weight = Weight(
+            imperial = weight.imperial,
+            metric = weight.metric
+        ),
+        adaptability = adaptability,
+        affection_level = affection_level,
+        child_friendly = child_friendly,
+        dog_friendly = dog_friendly,
+        energy_level = energy_level,
+        rare = rare,
+        wikipedia_url = wikipedia_url
+    )
+}
+

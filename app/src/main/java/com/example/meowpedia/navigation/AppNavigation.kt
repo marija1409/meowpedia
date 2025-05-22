@@ -9,7 +9,7 @@ import com.example.meowpedia.cats.list.cats
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost( //
+    NavHost(
         navController = navController,
         startDestination = "breeds"
     ) {
