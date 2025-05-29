@@ -162,12 +162,14 @@ fun BreedListScreen(
                     }
 
                     else -> {
-                        val breedsToShow =
-                            if (state.query.isNotEmpty()) state.filteredBreeds else state.breeds
+                        val breedsToShow = if (state.query.isNotEmpty()) state.filteredBreeds else state.breeds
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                         ) {
-                            items(breedsToShow) { breed ->
+                            items(
+                                items = breedsToShow,
+                                key = { it.id }
+                            ) { breed ->
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()

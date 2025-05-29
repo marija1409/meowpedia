@@ -1,6 +1,5 @@
 package com.example.meowpedia.cats.details.model
 
-import com.example.meowpedia.cats.api.model.CatWeight
 
 data class DetailsUiModel(
     val id: String,

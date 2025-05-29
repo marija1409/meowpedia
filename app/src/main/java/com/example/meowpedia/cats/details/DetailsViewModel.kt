@@ -68,10 +68,10 @@ class DetailsViewModel @Inject constructor(
                     )
                 }
 
-            } catch (e: Exception) {
-                Log.e("DetailsViewModel", "Failed to fetch details", e)
+            } catch (error: Exception) {
+                Log.e("DetailsViewModel", "Failed to fetch details", error)
                 setState {
-                    copy(error = Details.DetailsUiState.DetailsError.DataUpdateFailed(e))
+                    copy(error = DetailsUiState.DetailsError.DataUpdateFailed(error))
                 }
             } finally {
                 setState { copy(fetching = false) }
